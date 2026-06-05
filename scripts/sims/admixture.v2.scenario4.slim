@@ -1,0 +1,53 @@
+
+initialize() {
+    // Set a neutral mutation rate and recombination rate
+    initializeMutationRate(0);
+    initializeTreeSeq(); // Vital for the Python link
+
+    
+    
+    // m1 mutation type: neutral
+    initializeMutationType("m1", 0.5, "f", 0.0);
+    
+    // g1 genomic element type: uses m1
+    initializeGenomicElementType("g1", m1, 1.0);
+    
+    // Set up a 100 MB chromosome (0 to 999,999 bp)
+    initializeGenomicElement(g1, 0, 99999999); // 100 MB
+    initializeRecombinationRate(1e-8);
+}
+
+1 early() {
+    sim.addSubpop("p1", 10000);
+}
+
+// Generation 1: Initial population p1 starts
+2 early() {
+    sim.addSubpopSplit("p2", 10000, p1);
+}
+
+// Generation 1: Initial population p1 starts
+10000 early() {
+    sim.addSubpopSplit("p3", 10000, p2);
+}
+// After 10,000 generations of evolution, create population 2 from p1
+20000 early() {
+    sim.addSubpopSplit("p4", 5000, p3);
+    // Set p4 to be 90% p3 and 10% p1
+    p4.setMigrationRates(c(p3, p1), c(0.9, 0.1));
+    p3.setSubpopulationSize(5000);
+}
+
+// Turn off migration for p4 after one generation so it evolves independently
+20001 early() {
+    p4.setMigrationRates(c(p3, p1), c(0.0, 0.0));
+}
+
+
+
+// Output the final state in VCF format and finish
+20500 late() {
+    sim.treeSeqOutput("output.scenario4.trees");
+    sim.simulationFinished();
+    
+}
